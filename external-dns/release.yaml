@@ -1,0 +1,38 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: external-dns
+  namespace: external-dns
+spec:
+  releaseName: external-dns
+  chart:
+    spec:
+      chart: external-dns
+      version: '4.5.1'
+      sourceRef:
+        kind: HelmRepository
+        name: bitnami
+        namespace: flux-system
+  interval: 1m
+  install:
+    remediation:
+      retries: 3
+  values:
+    azure:
+      resourceGroup: dns
+    logLevel: info
+    provider: azure
+    registry: txt
+  valuesFrom:
+  - kind: Secret
+    name: flux-dns-secrets
+    valuesKey: dns_subscription_id
+    targetPath: azure.subscriptionId
+  - kind: Secret
+    name: flux-dns-secrets
+    valuesKey: service_principal_dns_client_id
+    targetPath: azure.aadClientId
+  - kind: Secret
+    name: flux-dns-secrets
+    valuesKey: service_principal_dns_client_secret
+    targetPath: azure.aadClientSecret
